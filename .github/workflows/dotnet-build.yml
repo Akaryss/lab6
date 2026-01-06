@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-test:
     strategy:
-      fail-fast: false # Позволяет увидеть результат на обеих ОС, даже если одна упала
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -24,13 +24,16 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      # dotnet restore без параметров сам найдет все .csproj во всех папках
-      run: dotnet restore
+      # Мы указываем конкретные файлы. Это уберет ошибку MSB1003
+      run: |
+        dotnet restore Lab44/AdvertisementServiceMVC2.csproj
+        dotnet restore AdvertisementServiceMVC2.Tests/AdvertisementServiceMVC2.Tests.csproj
 
     - name: Build
-      # Собираем всё решение
-      run: dotnet build --configuration Release --no-restore
+      # Собираем основной проект
+      run: dotnet build Lab44/AdvertisementServiceMVC2.csproj --configuration Release --no-restore
 
     - name: Run Unit Tests
-      # Запускаем тесты. Маска **/*.csproj работает внутри самого dotnet test кроссплатформенно
-      run: dotnet test **/*Tests.csproj --configuration Release --no-build --verbosity normal
+      # Запускаем проект тестов. Даже если папка называется иначе, 
+      # мы используем поиск по маске, который внутри команды test работает стабильно.
+      run: dotnet test AdvertisementServiceMVC2.Tests/*.csproj --configuration Release --no-build --verbosity normal
