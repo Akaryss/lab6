@@ -23,17 +23,18 @@ jobs:
       with:
         dotnet-version: 8.0.x
 
-    - name: Restore dependencies
-      # Мы указываем конкретные файлы. Это уберет ошибку MSB1003
+    - name: Restore
+      # Восстанавливаем зависимости для обоих проектов
       run: |
         dotnet restore Lab44/AdvertisementServiceMVC2.csproj
         dotnet restore AdvertisementServiceMVC2.Tests/AdvertisementServiceMVC2.Tests.csproj
 
-    - name: Build
+    - name: Build Main Project
       # Собираем основной проект
       run: dotnet build Lab44/AdvertisementServiceMVC2.csproj --configuration Release --no-restore
 
     - name: Run Unit Tests
-      # Запускаем проект тестов. Даже если папка называется иначе, 
-      # мы используем поиск по маске, который внутри команды test работает стабильно.
-      run: dotnet test AdvertisementServiceMVC2.Tests/*.csproj --configuration Release --no-build --verbosity normal
+      # ВАЖНО: Убираем --no-build. 
+      # dotnet test сам соберет проект тестов и свяжет его с основным.
+      # Указываем прямой путь к файлу, без звездочек.
+      run: dotnet test AdvertisementServiceMVC2.Tests/AdvertisementServiceMVC2.Tests.csproj --configuration Release --verbosity normal
