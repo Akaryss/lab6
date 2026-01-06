@@ -9,6 +9,7 @@ on:
 jobs:
   build-and-test:
     strategy:
+      fail-fast: false # Позволяет увидеть результат на обеих ОС, даже если одна упала
       matrix:
         os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
@@ -23,15 +24,13 @@ jobs:
         dotnet-version: 8.0.x
 
     - name: Restore dependencies
-      # Ищем любой .csproj в папке Lab44 и в папке тестов
-      run: |
-        dotnet restore Lab44/*.csproj
-        dotnet restore AdvertisementServiceMVC2.Tests/*.csproj
+      # dotnet restore без параметров сам найдет все .csproj во всех папках
+      run: dotnet restore
 
     - name: Build
-      # Собираем основной проект
-      run: dotnet build Lab44/*.csproj --configuration Release --no-restore
+      # Собираем всё решение
+      run: dotnet build --configuration Release --no-restore
 
     - name: Run Unit Tests
-      # Запускаем тесты из папки тестов
-      run: dotnet test AdvertisementServiceMVC2.Tests/*.csproj --configuration Release --no-build --verbosity normal
+      # Запускаем тесты. Маска **/*.csproj работает внутри самого dotnet test кроссплатформенно
+      run: dotnet test **/*Tests.csproj --configuration Release --no-build --verbosity normal
