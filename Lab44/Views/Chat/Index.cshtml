@@ -1,0 +1,86 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.ChatViewModel>
+@{
+    ViewData["Title"] = "Мои сообщения";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>💬 Мои сообщения</h2>
+        <a asp-controller="Cabinet" asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Назад в кабинет
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="text-center py-5">
+            <div class="display-1 text-muted mb-3">💬</div>
+            <h3 class="text-muted mb-3">У вас пока нет сообщений</h3>
+            <p class="text-muted mb-4">Начните общение, написав продавцу на странице объявления</p>
+            <a asp-controller="Advertisements" asp-action="Index" class="btn btn-primary">
+                <i class="bi bi-binoculars"></i> Смотреть объявления
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="list-group">
+            @foreach (var chat in Model)
+            {
+                <a asp-action="Conversation"
+                   asp-route-userId="@chat.InterlocutorId"
+                   asp-route-adId="@chat.Advertisement?.Id"
+                   class="list-group-item list-group-item-action p-3 mb-2 rounded shadow-sm">
+
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <img src="https://ui-avatars.com/api/?name=@(chat.Interlocutor?.Name ?? "User")&background=random&size=64"
+                                 class="rounded-circle"
+                                 width="50"
+                                 height="50"
+                                 alt="@chat.Interlocutor?.Name">
+                        </div>
+
+                        <div class="col">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5 class="mb-1">@chat.Interlocutor?.Name</h5>
+
+                                    <p class="mb-1 text-muted text-truncate" style="max-width: 500px;">
+                                        @if (!string.IsNullOrEmpty(chat.LastMessage))
+                                        {
+                                            @if (chat.LastMessage.Length > 60)
+                                            {
+                                                @chat.LastMessage.Substring(0, 60)
+
+                                                <text>...</text>
+                                            }
+                                            else
+                                            {
+                                                @chat.LastMessage
+                                            }
+                                        }
+                                    </p>
+
+                                    @if (chat.Advertisement != null)
+                                    {
+                                        <small class="text-primary">
+                                            <i class="bi bi-tag"></i> @chat.Advertisement.Title
+                                        </small>
+                                    }
+                                </div>
+
+                                <div class="text-end">
+                                    <small class="text-muted d-block">@chat.FormattedDate</small>
+                                    <small class="text-muted">
+                                        <i class="bi bi-chat-text"></i> @chat.MessageCount
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>

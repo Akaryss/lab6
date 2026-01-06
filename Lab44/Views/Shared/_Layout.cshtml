@@ -1,0 +1,129 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using AdvertisementServiceMVC2.Models
+@inject SignInManager<AppUser> SignInManager
+@inject UserManager<AppUser> UserManager
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AdvertisementServiceMVC2</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AdvertisementServiceMVC2.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">AdvertisementService</a>
+
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
+                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <div class="navbar-collapse collapse d-sm-inline-flex">
+                    <!-- Левое меню -->
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Advertisements" asp-action="Index">Объявления</a></li>
+                        <li class="nav-item"><a class="nav-link text-dark" asp-controller="Categories" asp-action="Index">Категории</a></li>
+                    </ul>
+
+                    <!-- ПОИСК ПО ЦЕНТРУ -->
+                    <form class="d-flex mx-auto" asp-controller="Advertisements" asp-action="Index" method="get" style="width: 400px; position: relative;">
+                        <input class="form-control me-2" type="search" name="searchString" id="searchInput" placeholder="Поиск (например: BMW)" aria-label="Search" autocomplete="off">
+                        <button class="btn btn-outline-success" type="submit">Найти</button>
+                        <!-- Сюда будут падать подсказки -->
+                        <div id="searchSuggestions" class="list-group" style="position: absolute; top: 100%; left: 0; width: 100%; z-index: 1000; display: none;"></div>
+                    </form>
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Chat" asp-action="Index">
+                                <i class="bi bi-chat-text"></i> Сообщения
+                            </a>
+                        </li>
+                    }
+                    <!-- Правое меню (Юзер) -->
+                    <ul class="navbar-nav">
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            <li class="nav-item ms-2">
+                                <!-- Ссылка на ЛИЧНЫЙ КАБИНЕТ -->
+                                <a class="nav-link text-primary fw-bold" asp-controller="Cabinet" asp-action="Index">👤 Кабинет</a>
+                            </li>
+                            <li class="nav-item ms-2">
+                                <a class="btn btn-primary btn-sm mt-1" asp-controller="Advertisements" asp-action="Create">+ Подать</a>
+                            </li>
+                            @if (User.IsInRole("Admin"))
+                            {
+                                <li class="nav-item ms-2">
+                                    <a class="nav-link fw-bold text-danger" asp-controller="Admin" asp-action="Index">АДМИН</a>
+                                </li>
+                            }
+                        }
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2025 - AdvertisementServiceMVC2 -
+            <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        $(document).ready(function () {
+            $("#searchInput").on("input", function () {
+                var term = $(this).val();
+                if (term.length < 2) {
+                    $("#searchSuggestions").hide();
+                    return;
+                }
+
+                $.getJSON("/Advertisements/SearchSuggestions", { term: term }, function (data) {
+                    var suggestions = $("#searchSuggestions");
+                    suggestions.empty();
+                    if (data.length > 0) {
+                        $.each(data, function (i, item) {
+                            // ИЗМЕНЕНИЕ: Ссылка теперь ведет на Index с фильтром по categoryId
+                            // Добавили иконку папки 📂 для красоты
+                            suggestions.append('<a href="/Advertisements/Index?categoryId=' + item.val + '" class="list-group-item list-group-item-action">📂 Перейти в категорию: <b>' + item.label + '</b></a>');
+                        });
+                        suggestions.show();
+                    } else {
+                        // Если категорий не нашли, можно предложить искать по тексту
+                        suggestions.append('<div class="list-group-item text-muted">Категории не найдены. Нажмите Enter для поиска по заголовкам.</div>');
+                        suggestions.show();
+                    }
+                });
+            });
+
+            // Скрывать при клике вне
+            $(document).on("click", function (e) {
+                if (!$(e.target).closest("#searchInput").length) {
+                    $("#searchSuggestions").hide();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,78 @@
+﻿@model AdvertisementServiceMVC2.Models.Category
+
+@{
+    ViewData["Title"] = $"Категория: {Model.CategoryName}";
+}
+
+<h1>@Model.CategoryName</h1>
+
+@if (Model.ParentCategory != null)
+{
+    <p class="text-muted">
+        Родительская категория:
+        <a asp-action="Details" asp-route-id="@Model.ParentCategory.CategoryID">
+            @Model.ParentCategory.CategoryName
+        </a>
+    </p>
+}
+
+@if (Model.ChildCategories != null && Model.ChildCategories.Any())
+{
+    <h4>Подкатегории:</h4>
+    <ul>
+        @foreach (var child in Model.ChildCategories)
+        {
+            <li>
+                <a asp-action="Details" asp-route-id="@child.CategoryID">
+                    @child.CategoryName
+                </a>
+            </li>
+        }
+    </ul>
+}
+
+<hr />
+
+@if (Model.Advertisements != null && Model.Advertisements.Any())
+{
+    <h3>Объявления в этой категории (@Model.Advertisements.Count):</h3>
+    <div class="row">
+        @foreach (var ad in Model.Advertisements)
+        {
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    @if (ad.Photos != null && ad.Photos.Any())
+                    {
+                        var mainPhoto = ad.Photos.FirstOrDefault(p => p.IsMain) ?? ad.Photos.First();
+                        <img src="@mainPhoto.PhotoURL" class="card-img-top" alt="@ad.Title" style="height: 200px; object-fit: cover;">
+                    }
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title">@ad.Title</h5>
+                        <p class="card-text">@(ad.Description?.Length > 100 ? ad.Description.Substring(0, 100) + "..." : ad.Description)</p>
+                        <div class="mt-auto">
+                            <p class="card-text text-muted small">
+                                <strong>@ad.Price.ToString("N2") BYN</strong><br />
+                                @ad.Region?.RegionName, @ad.Region?.CityName<br />
+                                @ad.User?.UserName<br />
+                                @ad.CreatedAt.ToString("dd.MM.yyyy")<br />
+                                Статус: @ad.Status
+                            </p>
+                            <a href="@Url.Action("Details", "Advertisements", new { id = ad.Id })"
+                               class="btn btn-primary btn-sm">Подробнее</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        В этой категории пока нет объявлений.
+    </div>
+}
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-secondary">Назад к списку категорий</a>
+</div>

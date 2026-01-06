@@ -1,0 +1,23 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.Category>
+
+<h2>Категории</h2>
+
+<div class="row">
+    @foreach (var cat in Model)
+    {
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    @* Исправлено: Name -> CategoryName *@
+                    <h5>@cat.CategoryName</h5>
+
+                    @* Исправлено: IsActive -> Status == "Active" *@
+                    <p>@cat.Advertisements.Count(a => a.Status == "Active") активных объявлений</p>
+
+                    @* Исправлено: Id -> CategoryID *@
+                    <a asp-action="Details" asp-route-id="@cat.CategoryID" class="btn btn-primary">Открыть</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

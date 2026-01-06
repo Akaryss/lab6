@@ -1,0 +1,113 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.Advertisement>
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = "Избранное";
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container mt-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link" asp-action="Index">Мои объявления</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link active" href="#">Избранное (@Model.Count())</a>
+        </li>
+    </ul>
+
+    <div class="row">
+        @if (!Model.Any())
+        {
+            <div class="col-12">
+                <div class="text-center py-5">
+                    <h4 class="text-muted">Здесь пока пусто</h4>
+                    <p class="text-muted">Добавляйте объявления в избранное, чтобы не потерять их</p>
+                    <a asp-controller="Advertisements" asp-action="Index" class="btn btn-primary">
+                        Найти объявления
+                    </a>
+                </div>
+            </div>
+        }
+
+        @foreach (var ad in Model)
+        {
+            var statusClass = ad.Status == "Active" ? "bg-success" :
+            ad.Status == "Sold" ? "bg-warning" :
+            "bg-secondary";
+            var statusText = ad.Status == "Active" ? "Активно" :
+            ad.Status == "Sold" ? "Продано" :
+            "Архив";
+            var photoUrl = ad.Photos?.FirstOrDefault(p => p.IsMain)?.PhotoURL ?? "https://placehold.co/400x300";
+
+            <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+                <div class="card h-100 shadow-sm">
+                    <div class="position-absolute top-0 end-0 m-2">
+                        <span class="badge @statusClass">@statusText</span>
+                    </div>
+
+                    <img src="@photoUrl"
+                         class="card-img-top" style="height: 180px; object-fit: cover;" alt="@ad.Title">
+
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title text-truncate" title="@ad.Title">@ad.Title</h5>
+
+                        <p class="card-text fw-bold text-primary mb-1">@ad.Price.ToString("N0") BYN</p>
+
+                        <p class="card-text small text-muted mb-2">
+                            @ad.Region?.CityName<br />
+                            @ad.CreatedAt.ToString("dd.MM.yyyy")
+                        </p>
+
+                        <div class="mt-auto">
+                            <a asp-controller="Advertisements" asp-action="Details" asp-route-id="@ad.Id"
+                               class="btn btn-sm btn-outline-primary w-100 mb-2">
+                                Открыть
+                            </a>
+
+                            <button type="button" onclick="removeFromFavorites(@ad.Id)"
+                                    class="btn btn-sm btn-outline-danger w-100">
+                                <i class="bi bi-heartbreak"></i> Убрать
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function removeFromFavorites(adId) {
+            $.post("/Cabinet/ToggleFavorite", { adId: adId }, function(data) {
+                if (data.success) {
+                    $(`button[onclick="removeFromFavorites(${adId})"]`).closest('.col-lg-3').fadeOut(300, function() {
+                        $(this).remove();
+                        updateFavoritesCount();
+                        location.reload();
+                    });
+                }
+            });
+        }
+
+        function updateFavoritesCount() {
+            var count = $('.col-lg-3').length;
+            $('.nav-link.active').text('Избранное (' + count + ')');
+
+            if (count === 0) {
+                $('.row').html(`
+                    <div class="col-12">
+                        <div class="text-center py-5">
+                            <h4 class="text-muted">Здесь пока пусто</h4>
+                            <p class="text-muted">Добавляйте объявления в избранное, чтобы не потерять их</p>
+                            <a asp-controller="Advertisements" asp-action="Index" class="btn btn-primary">
+                                Найти объявления
+                            </a>
+                        </div>
+                    </div>
+                `);
+            }
+        }
+    </script>
+}

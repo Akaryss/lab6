@@ -1,0 +1,64 @@
+﻿@model AdvertisementServiceMVC2.Models.Advertisement
+
+@{
+    ViewData["Title"] = "Новое объявление";
+}
+
+<div class="container mt-4">
+    <h2>Подать объявление</h2>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">
+            <!-- enctype="multipart/form-data" обязателен для загрузки файлов -->
+            <form asp-action="Create" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Заголовок</label>
+                    <input asp-for="Title" class="form-control" placeholder="Что вы продаете?" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Цена (руб.)</label>
+                    <input asp-for="Price" class="form-control" type="number" min="0" />
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Категория</label>
+                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories">
+                        <option value="">-- Выберите категорию --</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Город / Регион</label>
+                    <select asp-for="RegionId" class="form-control" asp-items="ViewBag.Regions">
+                        <option value="">-- Выберите город --</option>
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Описание</label>
+                    <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Фотография</label>
+                    <input type="file" name="uploadedFile" class="form-control" accept="image/*" />
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-lg">Опубликовать</button>
+                <a asp-action="Index" class="btn btn-secondary btn-lg">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

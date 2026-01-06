@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Админ-панель";
+}
+
+<div class="container mt-4">
+    <h1>Панель администратора</h1>
+    <div class="row mt-4">
+        <!-- ОБЪЯВЛЕНИЯ -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Объявления</h5>
+                    <p class="card-text">Просмотр и удаление (модерация) всех объявлений системы.</p>
+                    <a asp-action="Ads" class="btn btn-primary mt-auto">Управление</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- КАТЕГОРИИ -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Категории</h5>
+                    <p class="card-text">Создание и редактирование структуры категорий товаров.</p>
+                    <a asp-action="Categories" class="btn btn-primary mt-auto">Управление</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- РЕГИОНЫ -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 shadow-sm">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">Регионы</h5>
+                    <p class="card-text">Настройка географических зон и городов.</p>
+                    <a asp-action="Regions" class="btn btn-primary mt-auto">Управление</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ПОЛЬЗОВАТЕЛИ (Новая панель для Лабы 5) -->
+        <div class="col-md-4 mb-4">
+            <div class="card text-center h-100 shadow-sm border-info">
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title text-info">Пользователи</h5>
+                    <p class="card-text">Управление учетными записями: просмотр, редактирование и удаление пользователей.</p>
+                    <a asp-action="Users" class="btn btn-info text-white mt-auto">Управление пользователями</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Добавим немного эффектов при наведении */
+    .card {
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.1) !important;
+        }
+</style>

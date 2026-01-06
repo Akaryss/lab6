@@ -1,0 +1,36 @@
+﻿@model AdvertisementServiceMVC2.Models.Region
+@{
+    ViewData["Title"] = "Добавить регион";
+}
+
+<div class="container mt-4">
+    <h2>Добавление региона</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <form asp-action="CreateRegion" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Название региона (Область/Край)</label>
+                    <input asp-for="RegionName" class="form-control" placeholder="Например: Московская область" />
+                    <span asp-validation-for="RegionName" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Город</label>
+                    <input asp-for="CityName" class="form-control" placeholder="Например: Москва" />
+                    <span asp-validation-for="CityName" class="text-danger"></span>
+                </div>
+
+                <button type="submit" class="btn btn-success">Сохранить</button>
+                <a asp-action="Regions" class="btn btn-secondary">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,138 @@
+﻿@model AdvertisementServiceMVC2.Models.Advertisement
+
+@{
+    ViewData["Title"] = Model.Title;
+}
+
+<div class="container mt-4">
+    <!-- Навигация ("хлебные крошки") -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Все объявления</a></li>
+            <li class="breadcrumb-item"><a asp-action="Index" asp-route-categoryId="@Model.CategoryId">@Model.Category?.CategoryName</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Лот №@Model.Id</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- ЛЕВАЯ КОЛОНКА: ФОТО -->
+        <div class="col-md-8">
+            <div class="card shadow-sm mb-4">
+                @{
+                    var mainPhoto = Model.Photos?.FirstOrDefault(p => p.IsMain)?.PhotoURL ?? "https://placehold.co/800x600?text=No+Photo";
+                }
+                <img src="@mainPhoto" class="card-img-top" alt="@Model.Title" style="width: 100%; height: 500px; object-fit: cover;">
+                <div class="card-body">
+                    <h1 class="card-title mb-3">@Model.Title</h1>
+                    <h4 class="text-muted mb-3">Описание</h4>
+                    <p class="card-text" style="white-space: pre-line;">@Model.Description</p>
+                </div>
+                <div class="card-footer text-muted">
+                    Опубликовано: @Model.CreatedAt.ToString("f") <br />
+                    Регион: @Model.Region?.CityName
+                </div>
+            </div>
+        </div>
+
+        <!-- ПРАВАЯ КОЛОНКА: ЦЕНА И ПРОДАВЕЦ -->
+        <div class="col-md-4">
+            <!-- Блок цены -->
+            <div class="card shadow-sm mb-3">
+                <div class="card-body">
+                    <h2 class="card-title text-primary fw-bold">@Model.Price.ToString("N0") BYN</h2>
+
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                            <button id="favBtn" class="btn btn-outline-danger w-100 mt-2" onclick="toggleFavorite(@Model.Id)">
+                                ❤ В избранное
+                            </button>
+                    }
+                    else
+                    {
+                            <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100 mt-2">Войдите, чтобы добавить в избранное</a>
+                    }
+                </div>
+            </div>
+
+            <!-- Блок продавца -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    Продавец
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <img src="https://ui-avatars.com/api/?name=@(Model.User?.Name ?? "User")&background=random&size=128"
+                             class="rounded-circle" alt="User Avatar">
+                    </div>
+
+                    <h5>@(Model.User?.Name ?? "Пользователь")</h5>
+
+                    <div class="mb-3 text-warning">
+                        @for (int i = 0; i < Math.Round(Model.User?.Rating ?? 5); i++)
+                        {
+                            <span>★</span>
+                        }
+                        <span class="text-dark">(@(Model.User?.Rating ?? 5.0m))</span>
+                    </div>
+                    <p class="text-muted small">На сайте с 2024 года</p>
+
+                    <!-- КНОПКА ТЕЛЕФОНА -->
+                    <button id="phoneBtn" onclick="showPhone(@Model.Id)" class="btn btn-success w-100 mb-2">
+                        📞 Показать телефон
+                    </button>
+                    <!-- Место, где появится телефон -->
+                    <h4 id="phoneDisplay" class="text-success fw-bold" style="display:none;"></h4>
+
+                    <!-- КНОПКА СООБЩЕНИЯ -->
+                    @if (User.Identity.IsAuthenticated)
+                    {
+                        <!-- Если это НЕ мое объявление -->
+                        @if (Model.User.UserName != User.Identity.Name)
+                        {
+                            <a asp-controller="Chat" asp-action="Conversation"
+                               asp-route-userId="@Model.UserId"
+                               asp-route-adId="@Model.Id"
+                               class="btn btn-outline-primary w-100">
+                                💬 Написать сообщение
+                            </a>
+                        }
+                        else
+                        {
+                            <span class="badge bg-secondary">Это ваше объявление</span>
+                        }
+                    }
+                    else
+                    {
+                        <a asp-area="Identity" asp-page="/Account/Login" class="btn btn-outline-secondary w-100">Войдите, чтобы написать</a>
+                    }
+                </div>
+            </div>
+
+@section Scripts {
+                <script>
+                    // Функция Избранного (которая уже была)
+                    function toggleFavorite(id) {
+                        $.post("/Cabinet/ToggleFavorite", { adId: id }, function(data) {
+                            var btn = $("#favBtn");
+                            if (data.status === "added") {
+                                btn.text("💔 Убрать из избранного").addClass("btn-danger").removeClass("btn-outline-danger");
+                            } else {
+                                btn.text("❤ В избранное").addClass("btn-outline-danger").removeClass("btn-danger");
+                            }
+                        });
+                    }
+
+                    // НОВАЯ: Функция показа телефона
+                    function showPhone(id) {
+                    @if (!User.Identity.IsAuthenticated)
+                    {
+                        <text>alert("Пожалуйста, войдите на сайт, чтобы видеть контакты."); return;</text>
+                    }
+
+                        $.get("/Advertisements/GetSellerPhone", { adId: id }, function(data) {
+                            $("#phoneBtn").hide(); // Скрываем кнопку
+                            $("#phoneDisplay").text(data.phone).show(); // Показываем номер
+                        });
+                    }
+                </script>
+            }

@@ -1,0 +1,328 @@
+﻿@page
+@model LoginModel
+
+@{
+    ViewData["Title"] = "Вход в систему";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-xl-8 col-lg-10">
+            <div class="card shadow-lg border-0 overflow-hidden">
+                <div class="row g-0">
+                    <!-- Левая колонка - Информация -->
+                    <div class="col-lg-6 d-none d-lg-block">
+                        <div class="bg-gradient-primary h-100 p-5 text-white d-flex flex-column">
+                            <div class="mb-5">
+                                <a href="/" class="text-white text-decoration-none">
+                                    <h3><i class="bi bi-shop-window me-2"></i>AdvertisementService</h3>
+                                </a>
+                            </div>
+
+                            <div class="my-auto">
+                                <h1 class="display-6 fw-bold mb-4">С возвращением!</h1>
+                                <p class="lead mb-4">
+                                    Мы рады видеть вас снова. Войдите в свой аккаунт, чтобы продолжить пользоваться всеми возможностями нашей платформы.
+                                </p>
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                                        <i class="bi bi-check-lg fs-4"></i>
+                                    </div>
+                                    <span>Доступ ко всем вашим объявлениям</span>
+                                </div>
+
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                                        <i class="bi bi-check-lg fs-4"></i>
+                                    </div>
+                                    <span>Личные сообщения с покупателями</span>
+                                </div>
+
+                                <div class="d-flex align-items-center">
+                                    <div class="rounded-circle bg-white bg-opacity-25 p-2 me-3">
+                                        <i class="bi bi-check-lg fs-4"></i>
+                                    </div>
+                                    <span>Управление настройками аккаунта</span>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <div class="d-flex align-items-center">
+                                    <i class="bi bi-shield-check fs-1 me-3"></i>
+                                    <div>
+                                        <p class="mb-0 fw-bold">Ваши данные в безопасности</p>
+                                        <p class="small opacity-75 mb-0">Используем современные технологии шифрования</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Правая колонка - Форма входа -->
+                    <div class="col-lg-6">
+                        <div class="p-5">
+                            <div class="text-center mb-5">
+                                <h2 class="fw-bold text-gradient-primary mb-2">Войти в аккаунт</h2>
+                                <p class="text-muted">Пожалуйста, введите ваши учетные данные</p>
+                            </div>
+
+                            <form id="account" method="post">
+                                <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-dismissible fade show" role="alert">
+                                    <span>Ошибка при входе</span>
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+
+                                <!-- Поле Email -->
+                                <div class="form-group mb-4">
+                                    <label asp-for="Input.Email" class="form-label fw-semibold">
+                                        <i class="bi bi-envelope me-2 text-primary"></i>Электронная почта
+                                    </label>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-person text-muted"></i>
+                                        </span>
+                                        <input asp-for="Input.Email" class="form-control border-start-0 ps-0"
+                                               autocomplete="username" placeholder="ваш@email.com" />
+                                    </div>
+                                    <span asp-validation-for="Input.Email" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Поле Пароль -->
+                                <div class="form-group mb-4">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <label asp-for="Input.Password" class="form-label fw-semibold">
+                                            <i class="bi bi-key me-2 text-primary"></i>Пароль
+                                        </label>
+                                        <a id="forgot-password" asp-page="./ForgotPassword" class="small text-decoration-none">
+                                            Забыли пароль?
+                                        </a>
+                                    </div>
+                                    <div class="input-group">
+                                        <span class="input-group-text bg-light border-end-0">
+                                            <i class="bi bi-lock text-muted"></i>
+                                        </span>
+                                        <input asp-for="Input.Password" class="form-control border-start-0 ps-0"
+                                               autocomplete="current-password" placeholder="Введите пароль" />
+                                        <button class="btn btn-outline-secondary" type="button" id="togglePassword">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                    </div>
+                                    <span asp-validation-for="Input.Password" class="text-danger small mt-1 d-block"></span>
+                                </div>
+
+                                <!-- Чекбокс "Запомнить меня" -->
+                                <div class="form-check mb-4">
+                                    <input class="form-check-input" type="checkbox" asp-for="Input.RememberMe" id="rememberMe">
+                                    <label class="form-check-label" for="rememberMe">
+                                        Запомнить меня на этом устройстве
+                                    </label>
+                                </div>
+
+                                <!-- Кнопка входа -->
+                                <div class="d-grid mb-4">
+                                    <button id="login-submit" type="submit" class="btn btn-primary btn-lg py-3 fw-semibold">
+                                        <i class="bi bi-box-arrow-in-right me-2"></i>Войти в аккаунт
+                                    </button>
+                                </div>
+
+                                <!-- Разделитель -->
+                                <div class="text-center position-relative my-4">
+                                    <hr class="my-0">
+                                    <span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted small">
+                                        или
+                                    </span>
+                                </div>
+
+                                <!-- Вход через социальные сети -->
+                                @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                                {
+                                    <div class="mb-4">
+                                        <p class="text-center text-muted mb-3">Войти с помощью</p>
+                                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                                            <div class="d-grid gap-2">
+                                                @foreach (var provider in Model.ExternalLogins!)
+                                                {
+                                                    <button type="submit" class="btn btn-outline-primary d-flex align-items-center justify-content-center py-2"
+                                                            name="provider" value="@provider.Name" title="Войти используя @provider.DisplayName">
+                                                        @if (provider.DisplayName == "Google")
+                                                        {
+                                                            <i class="bi bi-google me-3 fs-5"></i>
+                                                            <span>Продолжить с Google</span>
+                                                        }
+                                                        else if (provider.DisplayName == "Facebook")
+                                                        {
+                                                            <i class="bi bi-facebook me-3 fs-5"></i>
+                                                            <span>Продолжить с Facebook</span>
+                                                        }
+                                                        else if (provider.DisplayName == "Microsoft")
+                                                        {
+                                                            <i class="bi bi-microsoft me-3 fs-5"></i>
+                                                            <span>Продолжить с Microsoft</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>Войти через @provider.DisplayName</span>
+                                                        }
+                                                    </button>
+                                                }
+                                            </div>
+                                        </form>
+                                    </div>
+                                }
+
+                                <!-- Ссылка на регистрацию -->
+                                <div class="text-center">
+                                    <p class="mb-2">Еще нет аккаунта?</p>
+                                    <a asp-page="./Register" asp-route-returnUrl="@Model.ReturnUrl"
+                                       class="btn btn-outline-success px-4">
+                                        <i class="bi bi-person-plus me-2"></i>Создать новый аккаунт
+                                    </a>
+                                </div>
+                            </form>
+
+                            <!-- Дополнительные ссылки -->
+                            <div class="text-center mt-4 pt-3 border-top">
+                                <p class="small text-muted mb-2">
+                                    <a asp-page="./ResendEmailConfirmation" class="text-decoration-none">
+                                        <i class="bi bi-envelope-exclamation me-1"></i>Не получили подтверждение email?
+                                    </a>
+                                </p>
+                                <p class="small text-muted mb-0">
+                                    <a href="/" class="text-decoration-none">
+                                        <i class="bi bi-house me-1"></i>Вернуться на главную
+                                    </a>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Информационные карточки -->
+            <div class="row mt-4 g-3">
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                <i class="bi bi-shield-check text-primary fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Безопасный вход</h5>
+                            <p class="card-text text-muted small">Все соединения защищены SSL-шифрованием</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                <i class="bi bi-clock-history text-success fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Доступ 24/7</h5>
+                            <p class="card-text text-muted small">Ваш аккаунт доступен в любое время суток</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card border-0 shadow-sm h-100">
+                        <div class="card-body text-center p-4">
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex p-3 mb-3">
+                                <i class="bi bi-headset text-warning fs-3"></i>
+                            </div>
+                            <h5 class="card-title">Поддержка</h5>
+                            <p class="card-text text-muted small">Помощь специалистов при возникновении проблем</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Стили для этой страницы -->
+<style>
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .text-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .card {
+        border-radius: 20px;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .form-control {
+        border-color: #e0e0e0;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+            transform: translateY(-1px);
+        }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: all 0.3s;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+    .input-group-text {
+        background-color: #f8f9fa;
+        border-color: #e0e0e0;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus + .input-group-text,
+    .form-control:focus ~ .input-group-text {
+        border-color: #667eea;
+        background-color: #f0f2ff;
+    }
+
+    /* Анимация появления */
+    .fade-in {
+        animation: fadeIn 0.6s ease-out;
+    }
+</style>
+
+<!-- JavaScript для показа/скрытия пароля -->
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        $(document).ready(function() {
+            // Показать/скрыть пароль
+            $('#togglePassword').click(function() {
+                const passwordInput = $('#Input_Password');
+                const type = passwordInput.attr('type') === 'password' ? 'text' : 'password';
+                passwordInput.attr('type', type);
+                $(this).find('i').toggleClass('bi-eye bi-eye-slash');
+            });
+
+            // Анимация появления
+            $('.card, .info-card').addClass('fade-in');
+
+            // Фокус на поле email при загрузке
+            $('#Input_Email').focus();
+
+            // Плавная валидация
+            $('form').on('submit', function() {
+                $(this).find('.btn-primary').html('<span class="spinner-border spinner-border-sm me-2"></span>Вход...');
+            });
+        });
+    </script>
+}

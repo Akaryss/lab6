@@ -1,0 +1,267 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Лабораторная №6 - Web API CRUD</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f4f7f6;
+            padding: 40px;
+        }
+
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        #editSection {
+            display: none;
+            background: #fff9e6;
+            border: 2px solid #ffeeba;
+        }
+
+        .badge-cat {
+            background-color: #0dcaf0;
+            color: #000;
+            font-weight: 500;
+        }
+
+        .table-id {
+            color: #adb5bd;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2 class="text-center mb-4 text-primary">Управление данными через Web API</h2>
+
+        <!-- СЕКЦИЯ РЕДАКТИРОВАНИЯ (Желтая панель) -->
+        <div id="editSection" class="card p-3 mb-4 shadow-sm">
+            <h5 class="text-warning">📝 Редактировать объявление #<span id="edit-id-label"></span></h5>
+            <input type="hidden" id="edit-id">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <label class="small text-muted">Заголовок</label>
+                    <input type="text" id="edit-title" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <label class="small text-muted">Цена</label>
+                    <input type="number" id="edit-price" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <label class="small text-muted">Категория</label>
+                    <select id="edit-category" class="form-select"></select>
+                </div>
+                <div class="col-md-3 d-flex align-items-end gap-2">
+                    <button onclick="saveUpdate()" class="btn btn-warning w-100 fw-bold">Сохранить</button>
+                    <button onclick="cancelEdit()" class="btn btn-secondary w-100">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ФОРМА СОЗДАНИЯ (Синяя панель) -->
+        <div id="createSection" class="card border-primary p-3 mb-4 shadow-sm">
+            <h5 class="text-primary">➕ Новое объявление</h5>
+            <div class="row g-2">
+                <div class="col-md-4"><input type="text" id="add-title" class="form-control" placeholder="Название лота"></div>
+                <div class="col-md-3"><input type="number" id="add-price" class="form-control" placeholder="Цена (BYN)"></div>
+                <div class="col-md-3"><select id="add-category" class="form-select"></select></div>
+                <div class="col-md-2"><button onclick="addItem()" class="btn btn-primary w-100">Создать</button></div>
+            </div>
+            <div id="id-info" class="small text-muted mt-2">Определение системных ID...</div>
+        </div>
+
+        <!-- ТАБЛИЦА -->
+        <table class="table table-hover align-middle">
+            <thead class="table-dark">
+                <tr>
+                    <th style="width: 80px;">ID</th>
+                    <th>Заголовок</th>
+                    <th>Цена</th>
+                    <th>Категория (One)</th>
+                    <th>Автор (One)</th>
+                    <th style="width: 120px;">Действия</th>
+                </tr>
+            </thead>
+            <tbody id="ads-table">
+                <!-- Данные подгружаются JS -->
+            </tbody>
+        </table>
+
+        <!-- ПАГИНАЦИЯ -->
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <button id="btn-prev" onclick="changePage(-1)" class="btn btn-outline-dark">⬅ Назад</button>
+            <span id="page-display" class="fw-bold text-muted">Загрузка...</span>
+            <button id="btn-next" onclick="changePage(1)" class="btn btn-outline-dark">Вперед ➡</button>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/AdvertisementsApi';
+        let currentPage = 1;
+        const pageSize = 10;
+
+        // Системные данные для предотвращения ошибки 500
+        let validUserId = "";
+        let validRegionId = 0;
+
+        // Данные текущего редактируемого объекта
+        let editOriginalUserId = "";
+        let editOriginalRegionId = 0;
+
+        async function init() {
+            await fetchValidIds();
+            await loadCategories();
+            await loadAds();
+        }
+
+        // Получаем живые ID из базы, чтобы не было конфликта ключей
+        async function fetchValidIds() {
+            try {
+                const res = await fetch(`${API_URL}/first-user`);
+                const data = await res.json();
+                validUserId = data.userId;
+                validRegionId = data.regionId;
+                document.getElementById('id-info').innerText = `Готов к работе. Юзер: ${validUserId.substring(0, 8)}...`;
+            } catch (e) {
+                document.getElementById('id-info').innerHTML = `<span class="text-danger">Ошибка: База пуста или API недоступен!</span>`;
+            }
+        }
+
+        async function loadCategories() {
+            const res = await fetch(`${API_URL}/categories`);
+            const cats = await res.json();
+            const selects = [document.getElementById('add-category'), document.getElementById('edit-category')];
+            selects.forEach(s => {
+                s.innerHTML = '';
+                cats.forEach(c => s.innerHTML += `<option value="${c.categoryID}">${c.categoryName}</option>`);
+            });
+        }
+
+        async function loadAds() {
+            const tbody = document.getElementById('ads-table');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center">Синхронизация с сервером...</td></tr>';
+
+            const res = await fetch(`${API_URL}?page=${currentPage}&pageSize=${pageSize}`);
+            const data = await res.json();
+
+            tbody.innerHTML = '';
+            data.items.forEach(ad => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="table-id">${ad.id}</td>
+                        <td><strong>${ad.title}</strong></td>
+                        <td>${ad.price} BYN</td>
+                        <td><span class="badge badge-cat">${ad.categoryName}</span></td>
+                        <td class="small text-secondary">${ad.userName}</td>
+                        <td>
+                            <button onclick="startEdit(${ad.id})" class="btn btn-sm btn-warning">✎</button>
+                            <button onclick="deleteAd(${ad.id})" class="btn btn-sm btn-danger">🗑</button>
+                        </td>
+                    </tr>`;
+            });
+
+            document.getElementById('page-display').innerText = `Страница ${data.page} из ${Math.ceil(data.total / pageSize)} (Всего: ${data.total})`;
+            document.getElementById('btn-prev').disabled = (data.page === 1);
+            document.getElementById('btn-next').disabled = (data.page * pageSize >= data.total);
+        }
+
+        // CREATE
+        async function addItem() {
+            if (!validUserId) return alert("Не найден валидный UserID в базе!");
+
+            const item = {
+                title: document.getElementById('add-title').value,
+                price: parseFloat(document.getElementById('add-price').value),
+                categoryId: parseInt(document.getElementById('add-category').value),
+                regionId: validRegionId,
+                userId: validUserId
+            };
+
+            const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            });
+
+            if (res.ok) {
+                document.getElementById('add-title').value = '';
+                document.getElementById('add-price').value = '';
+                loadAds();
+            } else {
+                const err = await res.json();
+                alert("Ошибка 500/400: " + JSON.stringify(err));
+            }
+        }
+
+        // UPDATE (Начало)
+        async function startEdit(id) {
+            const res = await fetch(`${API_URL}/${id}`);
+            const ad = await res.json();
+
+            document.getElementById('edit-id').value = ad.id;
+            document.getElementById('edit-id-label').innerText = ad.id;
+            document.getElementById('edit-title').value = ad.title;
+            document.getElementById('edit-price').value = ad.price;
+            document.getElementById('edit-category').value = ad.categoryId;
+
+            editOriginalUserId = ad.userId;
+            editOriginalRegionId = ad.regionId;
+
+            document.getElementById('createSection').style.display = 'none';
+            document.getElementById('editSection').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        // UPDATE (Сохранение)
+        async function saveUpdate() {
+            const id = document.getElementById('edit-id').value;
+            const item = {
+                id: parseInt(id),
+                title: document.getElementById('edit-title').value,
+                price: parseFloat(document.getElementById('edit-price').value),
+                categoryId: parseInt(document.getElementById('edit-category').value),
+                userId: editOriginalUserId,
+                regionId: editOriginalRegionId
+            };
+
+            const res = await fetch(`${API_URL}/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
+            });
+
+            if (res.ok) {
+                cancelEdit();
+                loadAds();
+            } else {
+                alert("Ошибка при сохранении!");
+            }
+        }
+
+        function cancelEdit() {
+            document.getElementById('editSection').style.display = 'none';
+            document.getElementById('createSection').style.display = 'block';
+        }
+
+        // DELETE
+        async function deleteAd(id) {
+            if (!confirm('Удалить эту запись навсегда?')) return;
+            await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
+            loadAds();
+        }
+
+        function changePage(step) {
+            currentPage += step;
+            loadAds();
+        }
+
+        init();
+    </script>
+</body>
+</html>

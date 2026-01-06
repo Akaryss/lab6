@@ -1,0 +1,352 @@
+﻿@model AdvertisementServiceMVC2.Models.FilterViewModel
+@{
+    ViewData["Title"] = "Объявления";
+}
+
+<div class="container mt-4">
+    <h2>Объявления</h2>
+
+    <div class="row">
+        <!-- ПАНЕЛЬ ФИЛЬТРОВ (слева) -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Фильтры</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" asp-action="Index" id="filterForm">
+
+                        <!-- ПОИСК -->
+                        <div class="mb-3">
+                            <label class="form-label">Поиск</label>
+                            <input type="text"
+                                   class="form-control"
+                                   name="SearchString"
+                                   value="@Model.SearchString"
+                                   placeholder="Название или описание...">
+                        </div>
+
+                        <!-- КАТЕГОРИЯ -->
+                        <div class="mb-3">
+                            <label class="form-label">Категория</label>
+                            <select class="form-select" name="CategoryId">
+                                <option value="">Все категории</option>
+                                @foreach (var category in Model.Categories)
+                                {
+                                    <option value="@category.CategoryID"
+                                            selected="@(Model.CategoryId == category.CategoryID)">
+                                        @category.CategoryName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- РЕГИОН -->
+                        <div class="mb-3">
+                            <label class="form-label">Регион</label>
+                            <select class="form-select" name="RegionId">
+                                <option value="">Все регионы</option>
+                                @foreach (var region in Model.Regions)
+                                {
+                                    <option value="@region.RegionID"
+                                            selected="@(Model.RegionId == region.RegionID)">
+                                        @region.CityName
+                                    </option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- ЦЕНА ОТ/ДО -->
+                        <div class="mb-3">
+                            <label class="form-label">Цена (BYN)</label>
+                            <div class="row g-2">
+                                <div class="col">
+                                    <input type="number"
+                                           class="form-control"
+                                           name="MinPrice"
+                                           value="@Model.MinPrice"
+                                           placeholder="От"
+                                           min="0">
+                                </div>
+                                <div class="col">
+                                    <input type="number"
+                                           class="form-control"
+                                           name="MaxPrice"
+                                           value="@Model.MaxPrice"
+                                           placeholder="До"
+                                           min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- КНОПКИ -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-funnel"></i> Применить фильтры
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle"></i> Сбросить
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- СПИСОК ОБЪЯВЛЕНИЙ (справа) -->
+        <div class="col-md-9">
+            <!-- ИНФО О ФИЛЬТРАХ -->
+            @if (Model.CategoryId.HasValue || Model.RegionId.HasValue ||
+            Model.MinPrice.HasValue || Model.MaxPrice.HasValue ||
+            !string.IsNullOrEmpty(Model.SearchString))
+            {
+                <div class="alert alert-info mb-3">
+                    <strong>Применены фильтры:</strong>
+                    @{
+                        var filters = new List<string>();
+
+                        if (!string.IsNullOrEmpty(Model.SearchString))
+                            filters.Add($"Поиск: '{Model.SearchString}'");
+
+                        if (Model.CategoryId.HasValue)
+                            filters.Add($"Категория: {Model.Categories.FirstOrDefault(c => c.CategoryID == Model.CategoryId)?.CategoryName}");
+
+                        if (Model.RegionId.HasValue)
+                            filters.Add($"Регион: {Model.Regions.FirstOrDefault(r => r.RegionID == Model.RegionId)?.CityName}");
+
+                        if (Model.MinPrice.HasValue)
+                            filters.Add($"Цена от: {Model.MinPrice.Value:N0} ₽");
+
+                        if (Model.MaxPrice.HasValue)
+                            filters.Add($"Цена до: {Model.MaxPrice.Value:N0} ₽");
+                    }
+                    @string.Join(" • ", filters)
+                    <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-info ms-2">
+                        Очистить все
+                    </a>
+                </div>
+            }
+
+            <!-- СТАТИСТИКА -->
+            <p class="text-muted">
+                Найдено объявлений: <strong>@Model.TotalCount</strong>
+            </p>
+
+            <!-- СЕТКА ОБЪЯВЛЕНИЙ -->
+            @if (!Model.Advertisements.Any())
+            {
+                <div class="alert alert-warning">
+                    По вашему запросу ничего не найдено.
+                    <a href="@Url.Action("Index")" class="btn btn-sm btn-outline-warning ms-2">
+                        Показать все объявления
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="row">
+                    @foreach (var ad in Model.Advertisements)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="card h-100 shadow-sm">
+                                @if (ad.Photos != null && ad.Photos.Any())
+                                {
+                                    <img src="@ad.Photos.First().PhotoURL"
+                                         class="card-img-top"
+                                         style="height: 200px; object-fit: cover;"
+                                         alt="@ad.Title">
+                                }
+                                else
+                                {
+                                    <div class="card-img-top bg-light d-flex align-items-center justify-content-center"
+                                         style="height: 200px;">
+                                        <span class="text-muted">Нет фото</span>
+                                    </div>
+                                }
+
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title text-truncate" title="@ad.Title">
+                                        @ad.Title
+                                    </h5>
+
+                                    <div class="mb-2">
+                                        <span class="badge bg-primary">
+                                            @ad.Category?.CategoryName
+                                        </span>
+                                        <span class="badge bg-secondary ms-1">
+                                            @ad.Region?.CityName
+                                        </span>
+                                    </div>
+
+                                    <p class="card-text flex-grow-1 text-muted small">
+                                        @(ad.Description?.Length > 100 ?
+                                            ad.Description.Substring(0, 100) + "..." :
+                                            ad.Description)
+                                    </p>
+
+                                    <div class="d-flex justify-content-between align-items-center mt-auto">
+                                        <h4 class="text-success mb-0">
+                                            @ad.Price.ToString("N0") BYN
+                                        </h4>
+                                        <small class="text-muted">
+                                            @ad.CreatedAt.ToString("dd.MM.yy")
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <div class="card-footer bg-transparent">
+                                    <a asp-action="Details" asp-route-id="@ad.Id"
+                                       class="btn btn-sm btn-outline-primary w-100">
+                                        <i class="bi bi-eye"></i> Подробнее
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- ПАГИНАЦИЯ -->
+                @if (Model.TotalPages > 1)
+                {
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center">
+                            <!-- СТРЕЛКА НАЗАД -->
+                            <li class="page-item @(Model.Page == 1 ? "disabled" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(Model.Page - 1)"
+                                   asp-route-categoryId="@Model.CategoryId"
+                                   asp-route-regionId="@Model.RegionId"
+                                   asp-route-minPrice="@Model.MinPrice"
+                                   asp-route-maxPrice="@Model.MaxPrice"
+                                   asp-route-searchString="@Model.SearchString">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- ПЕРВАЯ СТРАНИЦА -->
+                            @if (Model.Page > 3)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="1"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-regionId="@Model.RegionId"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-searchString="@Model.SearchString">
+                                        1
+                                    </a>
+                                </li>
+                                @if (Model.Page > 4)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+
+                            <!-- ОСНОВНЫЕ СТРАНИЦЫ (максимум 5 видимых) -->
+                            @{
+                                int startPage = Math.Max(1, Model.Page - 2);
+                                int endPage = Math.Min(Model.TotalPages, Model.Page + 2);
+
+                                // Корректировка, если мы в начале
+                                if (Model.Page <= 3)
+                                {
+                                    endPage = Math.Min(5, Model.TotalPages);
+                                }
+                                // Корректировка, если мы в конце
+                                if (Model.Page >= Model.TotalPages - 2)
+                                {
+                                    startPage = Math.Max(1, Model.TotalPages - 4);
+                                }
+                            }
+
+                            @for (int i = startPage; i <= endPage; i++)
+                            {
+                                <li class="page-item @(i == Model.Page ? "active" : "")">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@i"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-regionId="@Model.RegionId"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-searchString="@Model.SearchString">
+                                        @i
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- МНОГОТОЧИЕ И ПОСЛЕДНЯЯ СТРАНИЦА -->
+                            @if (Model.Page < Model.TotalPages - 2)
+                            {
+                                @if (Model.Page < Model.TotalPages - 3)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link"
+                                       asp-action="Index"
+                                       asp-route-page="@Model.TotalPages"
+                                       asp-route-categoryId="@Model.CategoryId"
+                                       asp-route-regionId="@Model.RegionId"
+                                       asp-route-minPrice="@Model.MinPrice"
+                                       asp-route-maxPrice="@Model.MaxPrice"
+                                       asp-route-searchString="@Model.SearchString">
+                                        @Model.TotalPages
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- СТРЕЛКА ВПЕРЁД -->
+                            <li class="page-item @(Model.Page == Model.TotalPages ? "disabled" : "")">
+                                <a class="page-link"
+                                   asp-action="Index"
+                                   asp-route-page="@(Model.Page + 1)"
+                                   asp-route-categoryId="@Model.CategoryId"
+                                   asp-route-regionId="@Model.RegionId"
+                                   asp-route-minPrice="@Model.MinPrice"
+                                   asp-route-maxPrice="@Model.MaxPrice"
+                                   asp-route-searchString="@Model.SearchString">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+                }
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+    .badge {
+        font-size: 0.75em;
+    }
+</style>
+
+<script>
+    // Автоотправка формы при изменении select
+    document.addEventListener('DOMContentLoaded', function() {
+        const selects = document.querySelectorAll('#filterForm select');
+        selects.forEach(select => {
+            select.addEventListener('change', function() {
+                document.getElementById('filterForm').submit();
+            });
+        });
+    });
+</script>

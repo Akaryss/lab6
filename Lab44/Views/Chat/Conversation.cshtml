@@ -1,0 +1,58 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.Message>
+@{
+    var otherUser = ViewBag.OtherUser as AdvertisementServiceMVC2.Models.AppUser;
+    string currentUserId = ViewBag.CurrentUserId;
+    ViewData["Title"] = "Чат с " + otherUser.Name;
+}
+
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between">
+            <h5 class="mb-0">Чат с пользователем: @otherUser.Name</h5>
+            @if (ViewBag.AdTitle != null)
+            {
+                    <span class="badge bg-light text-dark">По поводу: @ViewBag.AdTitle</span>
+            }
+        </div>
+
+        <!-- Окно с сообщениями -->
+        <div class="card-body" style="height: 400px; overflow-y: auto; background-color: #f8f9fa;" id="chatWindow">
+            @if (!Model.Any())
+            {
+                    <p class="text-center text-muted mt-5">История сообщений пуста. Напишите первое сообщение!</p>
+            }
+
+            @foreach (var msg in Model)
+            {
+                bool isMe = msg.FromUserId == currentUserId;
+                    <div class="d-flex mb-3 @(isMe ? "justify-content-end" : "justify-content-start")">
+                        <div class="card @(isMe ? "bg-primary text-white" : "bg-white")" style="max-width: 70%;">
+                            <div class="card-body p-2 px-3">
+                                <p class="mb-0">@msg.MessageText</p>
+                                <small class="@(isMe ? "text-light" : "text-muted")" style="font-size: 0.7rem;">
+                                @msg.SendDate.ToString("t")
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+            }
+        </div>
+
+        <!-- Форма отправки -->
+        <div class="card-footer">
+            <form asp-action="SendMessage" method="post" class="d-flex gap-2">
+                <input type="hidden" name="toUserId" value="@otherUser.Id" />
+                <input type="hidden" name="adId" value="@ViewBag.AdId" />
+
+                <input type="text" name="messageText" class="form-control" placeholder="Введите сообщение..." required autocomplete="off" />
+                <button type="submit" class="btn btn-success">Отправить ➤</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Автопрокрутка вниз при загрузке
+    var chatWindow = document.getElementById("chatWindow");
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+</script>

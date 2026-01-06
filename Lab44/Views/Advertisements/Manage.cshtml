@@ -1,0 +1,147 @@
+﻿@model AdvertisementServiceMVC2.Models.Advertisement
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = $"Управление объявлением: {Model.Title}";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var isOwner = Model.UserId == currentUser?.Id;
+    var isAdmin = User.IsInRole("Admin");
+}
+
+@if (!isOwner && !isAdmin)
+{
+    <div class="alert alert-danger">
+        У вас нет прав для управления этим объявлением.
+    </div>
+    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">Назад к объявлению</a>
+    return;
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success">
+        @TempData["SuccessMessage"]
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger">
+        @TempData["ErrorMessage"]
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Управление статусом</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="ChangeStatus" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Текущий статус:</label>
+                        <div class="alert
+                            @(Model.Status == "Active" ? "alert-success" :
+                              Model.Status == "Sold" ? "alert-warning" :
+                              "alert-secondary")">
+                            <strong>
+                                @(Model.Status == "Active" ? "Активно" :
+                                    Model.Status == "Sold" ? "Продано" :
+                                    "В архиве")
+                            </strong>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="newStatus" class="form-label">Изменить статус на:</label>
+                        <select name="newStatus" id="newStatus" class="form-control">
+                            <option value="Active" selected="@(Model.Status == "Active")">Активно</option>
+                            <option value="Sold" selected="@(Model.Status == "Sold")">Продано</option>
+                            <option value="Archived" selected="@(Model.Status == "Archived")">В архиве</option>
+                        </select>
+                    </div>
+
+                    @Html.AntiForgeryToken()
+
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            Сохранить изменения
+                        </button>
+                        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary">
+                            Назад к объявлению
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Информация об объявлении</h5>
+            </div>
+            <div class="card-body">
+                <p><strong>ID:</strong> #@Model.Id</p>
+                <p><strong>Категория:</strong> @Model.Category?.CategoryName</p>
+                <p><strong>Регион:</strong> @Model.Region?.RegionName, @Model.Region?.CityName</p>
+                <p><strong>Цена:</strong> @Model.Price.ToString("N2") ₽</p>
+                <p><strong>Дата создания:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                <p><strong>Владелец:</strong> @Model.User?.UserName</p>
+
+                @if (isAdmin && !isOwner)
+                {
+                    <div class="alert alert-warning mt-3">
+                        <small>
+                            Вы изменяете это объявление как администратор
+                        </small>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h5 class="mb-0">Быстрое управление</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="ChangeStatus" method="post" class="d-grid gap-2">
+                    <input type="hidden" name="id" value="@Model.Id" />
+
+                    @if (Model.Status != "Active")
+                    {
+                        <button type="submit" name="newStatus" value="Active"
+                                class="btn btn-success">
+                            Сделать активным
+                        </button>
+                    }
+
+                    @if (Model.Status != "Sold")
+                    {
+                        <button type="submit" name="newStatus" value="Sold"
+                                class="btn btn-warning">
+                            Отметить как проданное
+                        </button>
+                    }
+
+                    @if (Model.Status != "Archived")
+                    {
+                        <button type="submit" name="newStatus" value="Archived"
+                                class="btn btn-secondary">
+                            Переместить в архив
+                        </button>
+                    }
+
+                    @Html.AntiForgeryToken()
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-outline-secondary">Назад к списку объявлений</a>
+</div>

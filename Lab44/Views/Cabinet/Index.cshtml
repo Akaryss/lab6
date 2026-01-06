@@ -1,0 +1,164 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.Advertisement>
+@inject UserManager<AppUser> UserManager
+
+@{
+    ViewData["Title"] = "Личный кабинет";
+    var currentUserId = UserManager.GetUserId(User);
+}
+
+<div class="container mt-4">
+    <ul class="nav nav-tabs mb-4">
+        <li class="nav-item">
+            <a class="nav-link active" href="#">Мои объявления (@Model.Count())</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" asp-action="Favorites">Избранное</a>
+        </li>
+        
+    </ul>
+
+    <h2>Управление объявлениями</h2>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            @TempData["SuccessMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            У вас пока нет объявлений.
+            <a asp-controller="Advertisements" asp-action="Create" class="btn btn-primary btn-sm ms-2">
+                Подать первое?
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Фото</th>
+                        <th>Название</th>
+                        <th>Цена</th>
+                        <th>Статус</th>
+                        <th>Дата</th>
+                        <th style="width: 250px;">Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var ad in Model)
+                    {
+                        var statusBadgeClass = ad.Status == "Active" ? "bg-success" :
+                        ad.Status == "Sold" ? "bg-warning" :
+                        "bg-secondary";
+                        var statusText = ad.Status == "Active" ? "Активно" :
+                        ad.Status == "Sold" ? "Продано" :
+                        "Архив";
+
+                        <tr>
+                            <td style="width: 100px;">
+                                <img src="@(ad.Photos?.FirstOrDefault()?.PhotoURL ?? "https://placehold.co/100")"
+                                     class="img-thumbnail" style="height: 60px; width: 100px; object-fit: cover;" />
+                            </td>
+                            <td>
+                                <a asp-controller="Advertisements" asp-action="Details" asp-route-id="@ad.Id"
+                                   class="fw-bold text-decoration-none">
+                                    @ad.Title
+                                </a>
+                                <br />
+                                <small class="text-muted">@ad.Category?.CategoryName</small>
+                            </td>
+                            <td class="fw-bold">@ad.Price.ToString("N0") BYN</td>
+                            <td>
+                                <span class="badge @statusBadgeClass">@statusText</span>
+                            </td>
+                            <td>
+                                <small>@ad.CreatedAt.ToString("dd.MM.yy")</small>
+                            </td>
+                            <td>
+                                <!-- Компактные кнопки в строке -->
+                                <div class="d-flex flex-wrap gap-1">
+                                    <!-- Просмотр -->
+                                    <a asp-controller="Advertisements" asp-action="Details" asp-route-id="@ad.Id"
+                                       class="btn btn-sm btn-outline-primary" title="Просмотр">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+
+                                    <!-- Кнопки смены статуса -->
+                                    @if (ad.Status != "Active")
+                                    {
+                                        <form asp-controller="Advertisements" asp-action="ChangeStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@ad.Id" />
+                                            <input type="hidden" name="newStatus" value="Active" />
+                                            <button type="submit" class="btn btn-sm btn-success" title="Сделать активным">
+                                                <i class="bi bi-check-circle"></i>
+                                            </button>
+                                            @Html.AntiForgeryToken()
+                                        </form>
+                                    }
+
+                                    @if (ad.Status != "Sold")
+                                    {
+                                        <form asp-controller="Advertisements" asp-action="ChangeStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@ad.Id" />
+                                            <input type="hidden" name="newStatus" value="Sold" />
+                                            <button type="submit" class="btn btn-sm btn-warning" title="Отметить как проданное">
+                                                <i class="bi bi-currency-exchange"></i>
+                                            </button>
+                                            @Html.AntiForgeryToken()
+                                        </form>
+                                    }
+
+                                    @if (ad.Status != "Archived")
+                                    {
+                                        <form asp-controller="Advertisements" asp-action="ChangeStatus" method="post" class="d-inline">
+                                            <input type="hidden" name="id" value="@ad.Id" />
+                                            <input type="hidden" name="newStatus" value="Archived" />
+                                            <button type="submit" class="btn btn-sm btn-secondary" title="Переместить в архив">
+                                                <i class="bi bi-archive"></i>
+                                            </button>
+                                            @Html.AntiForgeryToken()
+                                        </form>
+                                    }
+
+                                    <!-- Управление -->
+                                    <a asp-controller="Advertisements" asp-action="Manage" asp-route-id="@ad.Id"
+                                       class="btn btn-sm btn-outline-secondary" title="Управление">
+                                        <i class="bi bi-gear"></i>
+                                    </a>
+                                    <!-- В существующем блоке кнопок, после "Управление" добавим: -->
+                                    <!-- Редактирование -->
+                                    <a asp-controller="Advertisements" asp-action="Edit" asp-route-id="@ad.Id"
+                                       class="btn btn-sm btn-outline-info" title="Редактировать">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <!-- Удаление -->
+                                    <form asp-action="DeleteMyAd" method="post" class="d-inline">
+                                        <input type="hidden" name="id" value="@ad.Id" />
+                                        <button type="submit" class="btn btn-sm btn-danger"
+                                                title="Удалить"
+                                                onclick="return confirm('Удалить объявление \" @ad.Title\"? Это действие нельзя отменить.');">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<style>
+    .btn-group-sm > .btn, .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+</style>

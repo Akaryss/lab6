@@ -1,0 +1,21 @@
+﻿@model AdvertisementServiceMVC2.Models.Category
+@{
+    ViewData["Title"] = "Новая категория";
+}
+
+<h2>Добавление категории</h2>
+
+<form asp-action="CreateCategory" method="post">
+    <div class="mb-3">
+        <label>Название</label>
+        <input asp-for="CategoryName" class="form-control" required />
+    </div>
+    <div class="mb-3">
+        <label>Родительская категория (необязательно)</label>
+        <select asp-for="ParentCategoryID" class="form-control" asp-items="ViewBag.Parents">
+            <option value="">-- Нет (Главная категория) --</option>
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <a asp-action="Categories" class="btn btn-secondary">Отмена</a>
+</form>

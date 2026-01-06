@@ -1,0 +1,25 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.AppUser>
+
+<h2>Пользователи</h2>
+
+<div class="row">
+    @foreach (var user in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div class="card-body">
+                    @* Исправлено: Phone -> PhoneNumber (стандартное поле Identity) *@
+                    <h5>@user.Name (@(user.PhoneNumber ?? "нет телефона"))</h5>
+
+                    @* Исправлено: Region.Name -> Region.RegionName (и проверка на null) *@
+                    <p>Регион: @(user.Region?.RegionName ?? "Не указан")</p>
+
+                    <p>Объявлений: @user.Advertisements.Count</p>
+
+                    @* Id у IdentityUser строковый и называется Id - тут все верно *@
+                    <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-sm btn-outline-primary">Профиль</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>

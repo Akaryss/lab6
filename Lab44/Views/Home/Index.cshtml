@@ -1,0 +1,179 @@
+﻿@{
+    ViewData["Title"] = "Главная";
+}
+
+<div class="container mt-5">
+    <!-- Герой-секция -->
+    <div class="row align-items-center hero-section mb-5">
+        <div class="col-md-6">
+            <h1 class="display-4 fw-bold mb-4">Доска объявлений</h1>
+            <p class="lead mb-4">
+                Покупайте, продавайте, находите нужные услуги и товары в нашем городе.
+                Более 10,000 объявлений от проверенных пользователей.
+            </p>
+            <div class="d-grid gap-2 d-md-flex">
+                @if (!User.Identity.IsAuthenticated)
+                {
+                    <a class="btn btn-primary btn-lg px-4 me-md-2" href="/Identity/Account/Register">Начать сейчас</a>
+                    <a class="btn btn-outline-secondary btn-lg px-4" href="/Identity/Account/Login">Войти</a>
+                }
+                else
+                {
+                    <a class="btn btn-primary btn-lg px-4 me-md-2" asp-controller="Advertisements" asp-action="Create">Подать объявление</a>
+                    <a class="btn btn-outline-secondary btn-lg px-4" asp-controller="Advertisements" asp-action="Index">Смотреть объявления</a>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <img src="https://preview.redd.it/desktop-background-of-the-week-v0-it8pdsslj95d1.jpeg?width=640&crop=smart&auto=webp&s=0bfe8e788c26451fdf2fb1737cb11f6f644d8eab"
+                 class="img-fluid rounded shadow" alt="Объявления">
+        </div>
+    </div>
+
+    <!-- Преимущества -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">Почему выбирают нас?</h2>
+            <p class="text-muted">Лучшая площадка для ваших объявлений</p>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-shield-check text-primary" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Безопасность</h5>
+                    <p class="card-text text-muted">Все пользователи проходят проверку, защита от мошенников</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-lightning-charge text-warning" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Быстро</h5>
+                    <p class="card-text text-muted">Объявление появляется на сайте в течение 5 минут</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-coin text-success" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Бесплатно</h5>
+                    <p class="card-text text-muted">Подача и просмотр объявлений совершенно бесплатно</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 col-sm-6 mb-4">
+            <div class="card border-0 shadow-sm h-100 text-center p-3">
+                <div class="card-body">
+                    <div class="feature-icon mb-3">
+                        <i class="bi bi-chat-dots text-info" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <h5 class="card-title">Поддержка</h5>
+                    <p class="card-text text-muted">Круглосуточная поддержка и помощь в решении вопросов</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Популярные категории -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2 class="fw-bold">Популярные категории</h2>
+            <p class="text-muted">Выберите интересующую вас категорию</p>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <a asp-controller="Advertisements" asp-action="Index" asp-route-category="Недвижимость"
+               class="card category-card text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="bi bi-house-door-fill text-primary mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Недвижимость</h5>
+                    <p class="text-muted small">Квартиры, дома, участки</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <a asp-controller="Advertisements" asp-action="Index" asp-route-category="Авто"
+               class="card category-card text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="bi bi-car-front-fill text-danger mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Автомобили</h5>
+                    <p class="text-muted small">Легковые, грузовые, мото</p>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-4 mb-3">
+            <a asp-controller="Advertisements" asp-action="Index" asp-route-category="Работа"
+               class="card category-card text-decoration-none">
+                <div class="card-body text-center">
+                    <i class="bi bi-briefcase-fill text-success mb-2" style="font-size: 2rem;"></i>
+                    <h5 class="card-title">Работа</h5>
+                    <p class="text-muted small">Вакансии, резюме</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="row bg-light rounded p-4 mb-5">
+        <div class="col-12 text-center mb-3">
+            <h3 class="fw-bold">Наша статистика</h3>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+            <h2 class="text-primary fw-bold">10,000+</h2>
+            <p class="text-muted">Объявлений</p>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+            <h2 class="text-primary fw-bold">5,000+</h2>
+            <p class="text-muted">Пользователей</p>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+            <h2 class="text-primary fw-bold">50+</h2>
+            <p class="text-muted">Категорий</p>
+        </div>
+        <div class="col-md-3 col-sm-6 text-center">
+            <h2 class="text-primary fw-bold">99%</h2>
+            <p class="text-muted">Довольных клиентов</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hero-section {
+        padding: 3rem 0;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-radius: 15px;
+        padding: 2rem;
+    }
+
+    .category-card {
+        transition: transform 0.3s, box-shadow 0.3s;
+        border: 1px solid #dee2e6;
+    }
+
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-color: #0d6efd;
+        }
+
+    .feature-icon {
+        height: 80px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+</style>

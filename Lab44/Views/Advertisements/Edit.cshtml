@@ -1,0 +1,203 @@
+﻿@model AdvertisementServiceMVC2.Models.Advertisement
+
+@{
+    ViewData["Title"] = "Редактировать объявление";
+    var mainPhoto = Model.Photos?.FirstOrDefault(p => p.IsMain);
+}
+
+<div class="container mt-4">
+    <h2>Редактировать объявление</h2>
+    <hr />
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Edit" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label">Заголовок</label>
+                    <input asp-for="Title" class="form-control" placeholder="Что вы продаете?" />
+                    <span asp-validation-for="Title" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Цена (руб.)</label>
+                    <input asp-for="Price" class="form-control" type="number" min="0"/>
+                    <span asp-validation-for="Price" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Категория</label>
+                    <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.Categories">
+                        <option value="">-- Выберите категорию --</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Город / Регион</label>
+                    <select asp-for="RegionId" class="form-control" asp-items="ViewBag.Regions">
+                        <option value="">-- Выберите город --</option>
+                    </select>
+                    <span asp-validation-for="RegionId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Описание</label>
+                    <textarea asp-for="Description" class="form-control" rows="5"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <!-- БЛОК ФОТО -->
+                <div class="card mb-3">
+                    <div class="card-header">
+                        <h5 class="mb-0">Фотография</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Текущее фото -->
+                        @if (mainPhoto != null)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">Текущее фото:</label>
+                                <div class="border p-2 rounded bg-light">
+                                    <img src="@mainPhoto.PhotoURL"
+                                         class="img-thumbnail"
+                                         style="max-height: 200px; max-width: 100%;"
+                                         alt="Текущее фото" />
+                                    <div class="mt-2 small text-muted">
+                                        Размер: @mainPhoto.PhotoURL
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                У этого объявления нет фотографий
+                            </div>
+                        }
+
+                        <!-- Загрузка нового фото -->
+                        <div class="mb-3">
+                            <label class="form-label">Заменить фото (опционально)</label>
+                            <input type="file" name="uploadedFile" class="form-control" accept="image/*" />
+                            <div class="form-text">
+                                Оставьте поле пустым, чтобы сохранить текущее фото.
+                                Максимальный размер: 5MB. Поддерживаемые форматы: JPG, PNG, GIF.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- КНОПКИ -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check-circle"></i> Сохранить изменения
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                        <i class="bi bi-x-circle"></i> Отмена
+                    </a>
+                    <a asp-controller="Cabinet" asp-action="Index" class="btn btn-outline-secondary ms-auto">
+                        <i class="bi bi-arrow-left"></i> В личный кабинет
+                    </a>
+                </div>
+            </form>
+        </div>
+
+        <!-- ИНФОРМАЦИОННАЯ ПАНЕЛЬ -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Информация</h5>
+                </div>
+                <div class="card-body">
+                    <dl>
+                        <dt>Статус</dt>
+                        <dd>
+                            @switch (Model.Status)
+                            {
+                                case "Active":
+                                    <span class="badge bg-success">Активно</span>
+                                    break;
+                                case "Sold":
+                                    <span class="badge bg-warning">Продано</span>
+                                    break;
+                                case "Archived":
+                                    <span class="badge bg-secondary">В архиве</span>
+                                    break;
+                            }
+                        </dd>
+
+                        <dt>ID объявления</dt>
+                        <dd>#@Model.Id</dd>
+
+                        <dt>Дата создания</dt>
+                        <dd>@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                        <dt>Дата последнего изменения</dt>
+                        <dd>@DateTime.Now.ToString("dd.MM.yyyy HH:mm")</dd>
+                    </dl>
+
+                    <div class="alert alert-info mt-3">
+                        <small>
+                            <i class="bi bi-info-circle"></i> После сохранения вы будете перенаправлены на страницу объявления.
+                        </small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- БЫСТРЫЕ ССЫЛКИ -->
+            <div class="card mt-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Быстрые действия</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Manage" asp-route-id="@Model.Id"
+                           class="btn btn-outline-secondary">
+                            <i class="bi bi-gear"></i> Управление статусом
+                        </a>
+                        <a asp-action="Details" asp-route-id="@Model.Id"
+                           class="btn btn-outline-primary">
+                            <i class="bi bi-eye"></i> Просмотр объявления
+                        </a>
+                        <a asp-controller="Cabinet" asp-action="Index"
+                           class="btn btn-outline-info">
+                            <i class="bi bi-person-circle"></i> Все мои объявления
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        // Предварительный просмотр фото перед загрузкой
+        document.querySelector('input[name="uploadedFile"]').addEventListener('change', function(e) {
+            if (this.files && this.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    // Можно добавить отображение превью
+                    console.log('Файл выбран для загрузки');
+                }
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+    </script>
+}

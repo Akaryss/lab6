@@ -1,0 +1,55 @@
+﻿@model AdvertisementServiceMVC2.Models.AppUser
+
+@{
+    ViewData["Title"] = "Редактирование пользователя";
+}
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-action="Index">Админ-панель</a></li>
+            <li class="breadcrumb-item"><a asp-action="Users">Пользователи</a></li>
+            <li class="breadcrumb-item active">Редактирование</li>
+        </ol>
+    </nav>
+
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm">
+                <div class="card-header bg-warning text-dark">
+                    <h4 class="mb-0">Редактировать профиль</h4>
+                </div>
+                <div class="card-body">
+                    <form asp-action="EditUser" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <!-- Скрытый ID, чтобы контроллер знал, кого обновлять -->
+                        <input type="hidden" asp-for="Id" />
+
+                        <div class="mb-3">
+                            <label class="form-label">Email (Логин)</label>
+                            <input name="email" value="@Model.Email" class="form-control" type="email" required />
+                            <span class="text-muted small">Изменение Email изменит логин пользователя.</span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Имя пользователя (ФИО)</label>
+                            <input name="name" value="@Model.Name" class="form-control" type="text" required />
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success">Сохранить изменения</button>
+                            <a asp-action="Users" class="btn btn-outline-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

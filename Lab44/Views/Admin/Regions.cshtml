@@ -1,0 +1,33 @@
+﻿@model IEnumerable<AdvertisementServiceMVC2.Models.Region>
+@{
+    ViewData["Title"] = "Регионы";
+}
+
+<h2>Управление регионами</h2>
+<!-- Ссылка на создание региона (нужно создать View если хочешь) -->
+<a asp-action="CreateRegion" class="btn btn-success mb-3">Добавить регион</a>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Регион</th>
+            <th>Город</th>
+            <th>Действия</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.RegionName</td>
+                <td>@item.CityName</td>
+                <td>
+                    <form asp-action="DeleteRegion" method="post" onsubmit="return confirm('Удалить?');">
+                        <input type="hidden" name="id" value="@item.RegionID" />
+                        <button type="submit" class="btn btn-danger btn-sm">Удалить</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
