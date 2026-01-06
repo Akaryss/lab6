@@ -1,0 +1,34 @@
+name: Lab 6 CI (Web API and Tests)
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  build-and-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 8.0.x
+
+    - name: Restore dependencies
+      # Путь к твоему основному проекту (проверь, чтобы папка называлась именно так в репозитории)
+      run: dotnet restore Lab44/Lab4.csproj
+
+    - name: Build
+      run: dotnet build Lab44/Lab4.csproj --no-restore --configuration Release
+
+    - name: Run Unit Tests
+      # Запускаем только проект тестов, чтобы не было ошибки "Aborted"
+      run: dotnet test AdvertisementServiceMVC2.Tests/AdvertisementServiceMVC2.Tests.csproj --configuration Release --verbosity normal
